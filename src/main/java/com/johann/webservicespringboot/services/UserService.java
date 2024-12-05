@@ -2,8 +2,10 @@ package com.johann.webservicespringboot.services;
 
 import com.johann.webservicespringboot.entities.User;
 import com.johann.webservicespringboot.repositories.UserRepository;
+import com.johann.webservicespringboot.services.exceptions.DatabaseException;
 import com.johann.webservicespringboot.services.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 
@@ -30,7 +32,15 @@ public class UserService {
     }
 
     public void delete(Long id) {
-        repository.deleteById(id);
+        try {
+            if(repository.existsById(id)) {
+                repository.deleteById(id);
+            } else {
+                throw new ResourceNotFoundException(id);
+            }
+        } catch (DataIntegrityViolationException e) {
+            throw new DatabaseException(e.getMessage());
+        }
     }
 
     public User update(Long id, User obj) {
